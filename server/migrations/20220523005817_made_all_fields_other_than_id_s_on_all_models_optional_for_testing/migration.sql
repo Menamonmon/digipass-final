@@ -1,0 +1,69 @@
+-- DropForeignKey
+ALTER TABLE "Classroom" DROP CONSTRAINT "Classroom_teacherId_fkey";
+
+-- DropForeignKey
+ALTER TABLE "IPAddress" DROP CONSTRAINT "IPAddress_ownerId_fkey";
+
+-- DropForeignKey
+ALTER TABLE "Pass" DROP CONSTRAINT "Pass_classId_fkey";
+
+-- DropForeignKey
+ALTER TABLE "Pass" DROP CONSTRAINT "Pass_issuerId_fkey";
+
+-- DropForeignKey
+ALTER TABLE "Pass" DROP CONSTRAINT "Pass_studentId_fkey";
+
+-- AlterTable
+ALTER TABLE "Classroom" ALTER COLUMN "title" DROP NOT NULL,
+ALTER COLUMN "description" DROP NOT NULL,
+ALTER COLUMN "startTime" DROP NOT NULL,
+ALTER COLUMN "endTime" DROP NOT NULL,
+ALTER COLUMN "classCode" DROP NOT NULL,
+ALTER COLUMN "createdAt" DROP NOT NULL,
+ALTER COLUMN "teacherId" DROP NOT NULL;
+
+-- AlterTable
+ALTER TABLE "IPAddress" ALTER COLUMN "ownerId" DROP NOT NULL,
+ALTER COLUMN "createdAt" DROP NOT NULL,
+ALTER COLUMN "address" DROP NOT NULL;
+
+-- AlterTable
+ALTER TABLE "Pass" ALTER COLUMN "studentId" DROP NOT NULL,
+ALTER COLUMN "classId" DROP NOT NULL,
+ALTER COLUMN "startTime" DROP NOT NULL,
+ALTER COLUMN "endTime" DROP NOT NULL,
+ALTER COLUMN "duration" DROP NOT NULL,
+ALTER COLUMN "issuerId" DROP NOT NULL,
+ALTER COLUMN "createdAt" DROP NOT NULL;
+
+-- AlterTable
+ALTER TABLE "Student" ALTER COLUMN "email" DROP NOT NULL,
+ALTER COLUMN "firstName" DROP NOT NULL,
+ALTER COLUMN "lastName" DROP NOT NULL,
+ALTER COLUMN "createdAt" DROP NOT NULL,
+ALTER COLUMN "lastLogin" DROP NOT NULL,
+ALTER COLUMN "studentId" DROP NOT NULL,
+ALTER COLUMN "passesUsed" DROP NOT NULL;
+
+-- AlterTable
+ALTER TABLE "Teacher" ALTER COLUMN "email" DROP NOT NULL,
+ALTER COLUMN "firstName" DROP NOT NULL,
+ALTER COLUMN "lastName" DROP NOT NULL,
+ALTER COLUMN "password" DROP NOT NULL,
+ALTER COLUMN "createdAt" DROP NOT NULL,
+ALTER COLUMN "lastLogin" DROP NOT NULL;
+
+-- AddForeignKey
+ALTER TABLE "IPAddress" ADD CONSTRAINT "IPAddress_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "Student"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Classroom" ADD CONSTRAINT "Classroom_teacherId_fkey" FOREIGN KEY ("teacherId") REFERENCES "Teacher"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Pass" ADD CONSTRAINT "Pass_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Pass" ADD CONSTRAINT "Pass_issuerId_fkey" FOREIGN KEY ("issuerId") REFERENCES "Teacher"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Pass" ADD CONSTRAINT "Pass_classId_fkey" FOREIGN KEY ("classId") REFERENCES "Classroom"("id") ON DELETE SET NULL ON UPDATE CASCADE;

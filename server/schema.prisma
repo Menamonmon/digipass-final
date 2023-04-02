@@ -1,0 +1,134 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+generator typegraphql {
+    provider           = "typegraphql-prisma"
+    output             = "./prisma/generated/type-graphql"
+    emitTranspiledCode = "true"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id         String   @id @default(uuid())
+    email      String   @unique @db.VarChar(75)
+    firstName  String   @db.VarChar(50)
+    lastName   String   @db.VarChar(50)
+    pictureUrl String   @db.VarChar(150)
+    createdAt  DateTime @default(now())
+    lastLogin  DateTime @default(now())
+    student    Student?
+    teacher    Teacher?
+
+    @@index([id])
+    @@index([email])
+}
+
+model Student {
+    studentId        String                 @db.VarChar(6)
+    passesUsed       Int                    @default(0)
+    ipAddresses      IPAddress[]
+    passes           Pass[]
+    classroomMapping StudentsOnClassrooms[]
+
+    id          String @id
+    userProfile User   @relation(fields: [id], references: [id])
+
+    @@index([id])
+}
+
+model Teacher {
+    classrooms         Classroom[]
+    issuedPasses       Pass[]
+    studentAssignments StudentsOnClassrooms[]
+
+    id          String @id
+    userProfile User   @relation(fields: [id], references: [id])
+
+    @@index([id])
+}
+
+model IPAddress {
+    id        String   @id @default(uuid())
+    address   String   @db.VarChar(50)
+    createdAt DateTime @default(now())
+
+    ownerId String
+    owner   Student @relation(fields: [ownerId], references: [id])
+}
+
+model Classroom {
+    id          String   @id @default(uuid())
+    title       String   @db.VarChar(150)
+    description String?  @db.VarChar(300)
+    classCode   String   @unique @default(uuid())
+    createdAt   DateTime @default(now())
+    archived    Boolean  @default(false)
+
+    startHour   Int // 0 - 24 hours (where 0 is 12am)
+    startMinute Int // 0 -60 minutes 
+    endHour     Int
+    endMinute   Int
+
+    teacherId String
+    teacher   Teacher @relation(fields: [teacherId], references: [id])
+
+    passes                     Pass[]
+    studentToClassroomMappings StudentsOnClassrooms[]
+
+    @@unique([id, teacherId])
+    @@index([id, teacherId, archived])
+    @@index([id, teacherId])
+    @@index([archived, teacherId])
+    @@index([id, classCode])
+    @@index([classCode])
+}
+
+model Pass {
+    id        String   @id @default(uuid())
+    reason    String   @default("") @db.VarChar(250)
+    createdAt DateTime @default(now())
+
+    approved Boolean @default(false)
+
+    startTime DateTime?
+    endTime   DateTime?
+    duration  Int
+
+    classroomId String
+    classroom   Classroom @relation(fields: [classroomId], references: [id])
+
+    issuerId String
+    issuer   Teacher @relation(fields: [issuerId], references: [id])
+
+    studentId String
+    student   Student @relation(fields: [studentId], references: [id])
+
+    @@unique([id, studentId])
+    @@unique([id, issuerId])
+    @@index([issuerId])
+    @@index([studentId])
+    @@index([id, issuerId])
+    @@index([id, studentId])
+    @@index([classroomId, issuerId])
+    @@index([studentId, classroomId, createdAt])
+}
+
+model StudentsOnClassrooms {
+    classroom   Classroom @relation(fields: [classroomId], references: [id])
+    classroomId String
+
+    student   Student @relation(fields: [studentId], references: [id])
+    studentId String
+
+    assignedBy   Teacher  @relation(fields: [assignedById], references: [id])
+    assignedById String
+    assignedAt   DateTime @default(now())
+
+    @@id([classroomId, studentId])
+    @@index([classroomId, studentId, assignedById])
+}
